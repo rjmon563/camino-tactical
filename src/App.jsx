@@ -6,43 +6,36 @@ import {
   MessageCircle, Crosshair, RotateCcw, AlertTriangle, Zap, Activity, Navigation
 } from 'lucide-react';
 
-/* ===================== CONFIGURACIÓN DE ESTILOS FINAL ===================== */
+/* ===================== ESTILOS TÁCTICOS ===================== */
 const STYLES = `
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
-:root { 
-  --yellow:#facc15; 
-  --red:#ff0000; 
-  --black:#050505; 
-  --cyan:#00e5ff; 
-  --green:#22c55e; 
-  --orange:#f97316; 
-}
+:root { --yellow:#facc15; --red:#ff0000; --black:#050505; --cyan:#00e5ff; --green:#22c55e; --orange:#f97316; }
 html, body, #root { margin: 0; height: 100%; background: var(--black); font-family: 'JetBrains Mono', monospace; color: white; overflow: hidden; }
 .leaflet-container { height: 100%; width: 100%; background: #000; filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(120%); z-index: 1; }
 
 .sniper-scope-marker { position: relative; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
 .scope-cross-h, .scope-cross-v { position: absolute; background: red; box-shadow: 0 0 8px red; }
-.scope-cross-h { width: 100%; height: 1px; }
-.scope-cross-v { width: 1px; height: 100%; }
-.scope-circle { width: 40px; height: 40px; border: 1px solid red; border-radius: 50%; }
-.scope-pulse { position: absolute; width: 40px; height: 40px; border: 2px solid red; border-radius: 50%; animation: pulse 2s infinite; }
-@keyframes pulse { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(3); opacity: 0; } }
+.scope-cross-h { width: 100%; height: 2px; }
+.scope-cross-v { width: 2px; height: 100%; }
+.scope-circle { width: 44px; height: 44px; border: 2px solid red; border-radius: 50%; box-shadow: 0 0 10px red; }
+.scope-pulse { position: absolute; width: 40px; height: 40px; border: 2px solid red; border-radius: 50%; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
 
-.tactical-stats { position: fixed; top: 20px; right: 20px; z-index: 1000; background: rgba(0,0,0,0.95); border: 2px solid var(--cyan); padding: 12px; border-radius: 8px; min-width: 140px; text-align: right; border-left: 5px solid var(--cyan); }
+.tactical-stats { position: fixed; top: 20px; right: 20px; z-index: 1000; background: rgba(0,0,0,0.9); border: 2px solid var(--cyan); padding: 12px; border-radius: 8px; min-width: 140px; border-left: 6px solid var(--cyan); }
 .stat-line { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 4px; }
 
 .selector-container { position: fixed; top: 20px; left: 20px; z-index: 5000; width: 230px; }
-select { background: #111; color: var(--yellow); border: 2px solid var(--yellow); padding: 12px; font-family: 'JetBrains Mono'; border-radius: 6px 6px 0 0; width: 100%; font-size: 11px; font-weight: 800; text-transform: uppercase; border-bottom: none; outline: none; }
+select { background: #111; color: var(--yellow); border: 2px solid var(--yellow); padding: 12px; font-family: 'JetBrains Mono'; border-radius: 6px 6px 0 0; width: 100%; font-size: 11px; font-weight: 800; border-bottom: none; outline: none; }
 .stage-details { background: rgba(0,0,0,0.95); border: 2px solid var(--yellow); padding: 10px; border-radius: 0 0 8px 8px; font-size: 10px; color: var(--orange); font-weight: 800; border-top: 1px solid rgba(250,204,21,0.3); }
 
 .bottom-console { position: fixed; bottom: 0; left: 0; right: 0; background: #0a0a0a; border-top: 3px solid var(--yellow); display: flex; justify-content: space-around; align-items: center; padding: 15px 10px 35px 10px; z-index: 6000; }
 .btn-ui { border-radius: 16px; border: 2px solid rgba(255,255,255,0.2); display: flex; flex-direction: column; align-items: center; justify-content: center; width: 75px; height: 75px; color: white; font-weight: 900; cursor: pointer; }
 
 .sos-menu { position: absolute; bottom: 100px; left: 10px; display: flex; flex-direction: column; gap: 10px; width: 240px; z-index: 9999; }
-.sos-btn-call { padding: 20px; border-radius: 12px; color: white; text-decoration: none; text-align: center; font-weight: 900; border: 3px solid white; font-size: 14px; box-shadow: 0 0 15px rgba(255,0,0,0.4); }
+.sos-btn-call { padding: 20px; border-radius: 12px; color: white; text-decoration: none; text-align: center; font-weight: 900; border: 3px solid white; font-size: 14px; box-shadow: 0 0 15px rgba(255,0,0,0.5); }
 `;
 
-/* ===================== BASE DE DATOS ÍNTEGRA (33 ETAPAS) ===================== */
+/* ===================== DATABASE ÍNTEGRA ===================== */
 const STAGES = [
   { id:1, name:"SJ Pied de Port - Roncesvalles", coords:[43.0125,-1.3148], dist:24.2, dPlus:1250, diff:"Muy Alta" },
   { id:2, name:"Roncesvalles - Zubiri", coords:[42.9298,-1.5042], dist:21.4, dPlus:300, diff:"Alta" },
@@ -81,7 +74,7 @@ const STAGES = [
 
 const ROUTE_PATH = STAGES.map(s => s.coords);
 
-function MapController({ userPos, tracking, target }) {
+function MapController({ userPos, tracking, targetStage }) {
   const map = useMap();
   useEffect(() => {
     if (tracking && userPos) {
@@ -90,11 +83,10 @@ function MapController({ userPos, tracking, target }) {
   }, [userPos, tracking, map]);
 
   useEffect(() => {
-    if (target && !tracking) {
-      map.flyTo(target, 15, { animate: true });
+    if (targetStage && !tracking) {
+      map.flyTo(targetStage, 15, { animate: true });
     }
-  }, [target, tracking, map]);
-
+  }, [targetStage, tracking, map]);
   return null;
 }
 
@@ -109,6 +101,7 @@ export default function App() {
   
   const lastPos = useRef(null);
   const lastStepTime = useRef(0);
+  const geoWatchId = useRef(null);
 
   const calculateKm = (lat1, lon1, lat2, lon2) => {
     const R = 6371;
@@ -118,17 +111,26 @@ export default function App() {
     return R * (2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
   };
 
-  const startSystem = async () => {
-    navigator.geolocation.watchPosition((p) => {
-      const newPos = [p.coords.latitude, p.coords.longitude];
-      if (lastPos.current) {
-        const d = calculateKm(lastPos.current[0], lastPos.current[1], newPos[0], newPos[1]);
-        if (d > 0.0015) setDistance(prev => prev + d); 
-      }
-      lastPos.current = newPos;
-      setUserPos(newPos);
-    }, null, { enableHighAccuracy: true });
+  const startTacticalSystem = async () => {
+    // 1. Iniciar Geolocalización de Alta Precisión
+    if ("geolocation" in navigator) {
+      geoWatchId.current = navigator.geolocation.watchPosition((p) => {
+        const newPos = [p.coords.latitude, p.coords.longitude];
+        
+        // Calcular KM si hay movimiento real
+        if (lastPos.current) {
+          const d = calculateKm(lastPos.current[0], lastPos.current[1], newPos[0], newPos[1]);
+          if (d > 0.002) { // Más de 2 metros para evitar ruido del GPS
+            setDistance(prev => prev + d);
+          }
+        }
+        lastPos.current = newPos;
+        setUserPos(newPos);
+      }, (err) => alert("ERROR GPS: Activa la ubicación en ajustes."), 
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 });
+    }
 
+    // 2. Iniciar Podómetro (Acelerómetro)
     if (window.DeviceMotionEvent) {
       if (typeof DeviceMotionEvent.requestPermission === 'function') {
         const res = await DeviceMotionEvent.requestPermission();
@@ -144,7 +146,8 @@ export default function App() {
     const acc = e.accelerationIncludingGravity;
     if (!acc) return;
     const force = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
-    if (force > 13 && Date.now() - lastStepTime.current > 380) {
+    // Umbral táctico para paso detectado
+    if (force > 12.5 && Date.now() - lastStepTime.current > 350) {
       setSteps(s => s + 1);
       lastStepTime.current = Date.now();
     }
@@ -156,8 +159,11 @@ export default function App() {
 
       {booting && (
         <div style={{position:'fixed', inset:0, background:'black', zIndex:10000, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center'}}>
-          <Zap size={60} color="var(--yellow)" className="animate-pulse mb-6" />
-          <button onClick={startSystem} style={{background:'var(--yellow)', padding:'20px 40px', borderRadius:'12px', color:'black', fontWeight:900, border:'none', cursor:'pointer', fontSize:'18px'}}>DESBLOQUEAR SISTEMA GPS</button>
+          <Zap size={80} color="var(--yellow)" className="animate-pulse mb-8" />
+          <button onClick={startTacticalSystem} style={{background:'var(--yellow)', padding:'25px 50px', borderRadius:'15px', color:'black', fontWeight:900, border:'none', cursor:'pointer', fontSize:'20px', boxShadow:'0 0 20px var(--yellow)'}}>
+            INICIAR GPS TÁCTICO
+          </button>
+          <p className="mt-6 text-white/40 text-[10px] tracking-[0.3em]">V16.3 SYSTEM READY</p>
         </div>
       )}
 
@@ -167,7 +173,7 @@ export default function App() {
           setActiveStage(s);
           setIsTracking(false);
         }}>
-          {STAGES.map(s => <option key={s.id} value={s.id}>ETAPA {s.id}: {s.name.substring(0,20)}</option>)}
+          {STAGES.map(s => <option key={s.id} value={s.id}>ETAPA {s.id}: {s.name.substring(0,18)}</option>)}
         </select>
         <div className="stage-details">
           DISTANCIA: {activeStage.dist} KM | +{activeStage.dPlus}M<br/>
@@ -176,13 +182,14 @@ export default function App() {
       </div>
 
       <div className="tactical-stats">
-        <div className="stat-line" style={{color:'var(--yellow)'}}><Activity size={16}/> <b>{steps} PASOS</b></div>
-        <div className="stat-line" style={{color:'var(--cyan)'}}><Navigation size={16}/> <b>{distance.toFixed(3)} KM</b></div>
+        <div className="stat-line" style={{color:'var(--yellow)'}}><Activity size={18}/> <b>{steps} PASOS</b></div>
+        <div className="stat-line" style={{color:'var(--cyan)'}}><Navigation size={18}/> <b>{distance.toFixed(3)} KM</b></div>
       </div>
 
       <MapContainer center={activeStage.coords} zoom={14} zoomControl={false}>
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <Polyline positions={ROUTE_PATH} pathOptions={{ color: 'var(--yellow)', weight: 4, opacity: 0.8 }} />
+        <Polyline positions={ROUTE_PATH} pathOptions={{ color: 'var(--yellow)', weight: 5, opacity: 0.9 }} />
+        
         {userPos && (
           <Marker position={userPos} icon={L.divIcon({
             className: '',
@@ -190,7 +197,8 @@ export default function App() {
             iconSize: [80, 80], iconAnchor: [40, 40]
           })} />
         )}
-        <MapController userPos={userPos} tracking={isTracking} target={activeStage.coords} />
+
+        <MapController userPos={userPos} tracking={isTracking} targetStage={activeStage.coords} />
       </MapContainer>
 
       <div className="bottom-console">
@@ -206,13 +214,24 @@ export default function App() {
           </button>
         </div>
 
-        <button onClick={() => window.open(`https://wa.me/?text=📍 GPS CAMINO: ${userPos?.[0]},${userPos?.[1]}`)} className="btn-ui" style={{background:'var(--green)', color:'black'}}>
+        <button onClick={() => window.open(`https://wa.me/?text=UBICACION TACTICA: ${userPos?.[0]},${userPos?.[1]}`)} className="btn-ui" style={{background:'var(--green)', color:'black'}}>
           <MessageCircle size={32}/><span className="text-[10px] mt-1">WHATSAPP</span>
         </button>
 
-        <button onClick={() => setIsTracking(!isTracking)} className="btn-ui" style={{background:'var(--orange)', border: isTracking ? '4px solid white' : 'none'}}>
+        <button 
+          onClick={() => {
+            if(!userPos) alert("Buscando señal GPS...");
+            setIsTracking(!isTracking);
+          }} 
+          className="btn-ui" 
+          style={{
+            background:'var(--orange)', 
+            border: isTracking ? '4px solid white' : '2px solid rgba(255,255,255,0.2)',
+            boxShadow: isTracking ? '0 0 15px var(--orange)' : 'none'
+          }}
+        >
           <Crosshair size={35} color={isTracking ? "white" : "black"}/>
-          <span className="text-[10px] mt-1">LOCK</span>
+          <span className="text-[10px] mt-1">{isTracking ? 'LOCK ON' : 'LOCK OFF'}</span>
         </button>
 
         <button onClick={() => { if(confirm("¿RESET?")) {setSteps(0); setDistance(0);} }} className="btn-ui" style={{background:'var(--orange)'}}>
