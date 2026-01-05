@@ -2,29 +2,26 @@
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22black%22/><circle cx=%2250%22 cy=%2250%22 r=%2240%22 stroke=%22red%22 stroke-width=%222%22 fill=%22none%22/><path d=%22M50 10 L50 90 M10 50 L90 50%22 stroke=%22red%22 stroke-width=%221%22/><path d=%22M50 30 L60 50 L50 80 L40 50 Z%22 fill=%22yellow%22/></svg>" />
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#050505" />
-    <meta name="description" content="Sistema GPS Táctico para el Camino de Santiago" />
     
-    <link rel="apple-touch-icon" href="/logo192.png" />
     <link rel="manifest" href="/manifest.json" />
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CaminoTech">
 
-    <title>Buen Camino Tech - Tactical GPS</title>
+    <title>GPS TÁCTICO - CAMINO</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
-      /* Reseteo total para que la App ocupe el 100% real de la pantalla */
       body, html, #root {
         height: 100%;
         margin: 0;
         padding: 0;
-        background-color: #050505; /* Fondo negro táctico */
+        background-color: #050505;
         overflow: hidden;
         position: fixed;
         width: 100%;
@@ -32,7 +29,6 @@
     </style>
   </head>
   <body>
-    <noscript>Necesitas activar JavaScript para ejecutar esta aplicación.</noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
