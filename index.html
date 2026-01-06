@@ -14,16 +14,24 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
     <style>
-      /* Estilos para que la app ocupe toda la pantalla sin barras */
-      body, html, #root { 
-        height: 100%; 
+      /* Estilos críticos para que se vea la interfaz táctica */
+      body, html { 
         margin: 0; 
         padding: 0; 
-        background-color: #050505; 
-        overflow: hidden; 
-        position: fixed; 
+        height: 100%; 
         width: 100%; 
+        background-color: #050505; 
+        color: white;
+        overflow: hidden;
+        position: fixed;
+      }
+      #root { 
+        height: 100%; 
+        width: 100%; 
+        display: flex;
+        flex-direction: column;
       }
     </style>
   </head>
