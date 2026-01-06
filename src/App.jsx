@@ -26,49 +26,49 @@ select { background: var(--gray); color: var(--orange); border: 1px solid var(--
 .btn-ui { border-radius: 8px; border: 1px solid #333; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 75px; color: white; font-weight: 900; cursor: pointer; font-size: 10px; background: var(--gray); text-decoration: none; }
 
 .btn-wsap { background: var(--green) !important; color: black !important; border: none; }
-.btn-track { background: var(--orange) !important; color: black !important; border: none; }
+.btn-track { border: 2px solid var(--orange) !important; }
+.btn-track.active { background: var(--orange) !important; color: black !important; }
 .btn-rest { background: var(--orange) !important; color: black !important; border: none; }
 .btn-sos { background: #400 !important; border: 1px solid red !important; color: white !important; }
 
 .overlay-info { position: fixed; bottom: 135px; left: 20px; right: 20px; background: rgba(0,0,0,0.9); border-left: 4px solid var(--orange); padding: 12px; border-radius: 4px; z-index: 1000; display: flex; justify-content: space-between; font-size: 11px; border-top: 1px solid #333; }
-.sos-dropdown { position: fixed; bottom: 130px; left: 20px; right: 20px; z-index: 8000; background: #200; border: 2px solid red; border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-.sos-call { background: white; color: red; padding: 15px; border-radius: 8px; text-align: center; font-weight: 900; text-decoration: none; font-size: 18px; }
+.gps-status { position: fixed; top: 160px; right: 20px; z-index: 1000; font-size: 9px; color: #666; background: rgba(0,0,0,0.5); padding: 2px 5px; }
 `;
 
 const STAGES = [
-  { id:1, name:"SJ Pied de Port - Roncesvalles", coords:[43.0125,-1.3148], diff:"ALTA", des:"1.250m" },
-  { id:2, name:"Roncesvalles - Zubiri", coords:[42.9298,-1.5042], diff:"MEDIA", des:"400m" },
-  { id:3, name:"Zubiri - Pamplona", coords:[42.8125,-1.6458], diff:"BAJA", des:"150m" },
-  { id:4, name:"Pamplona - P. la Reina", coords:[42.6719,-1.8139], diff:"MEDIA", des:"450m" },
-  { id:5, name:"P. la Reina - Estella", coords:[42.6715,-2.0315], diff:"BAJA", des:"200m" },
-  { id:6, name:"Estella - Los Arcos", coords:[42.5684,-2.1917], diff:"BAJA", des:"150m" },
-  { id:7, name:"Los Arcos - Logroño", coords:[42.4627,-2.445], diff:"BAJA", des:"100m" },
-  { id:8, name:"Logroño - Nájera", coords:[42.4162,-2.7303], diff:"MEDIA", des:"300m" },
-  { id:9, name:"Nájera - Sto. Domingo", coords:[42.4411,-2.9535], diff:"BAJA", des:"250m" },
-  { id:10, name:"Sto. Domingo - Belorado", coords:[42.4194,-3.1904], diff:"BAJA", des:"150m" },
-  { id:11, name:"Belorado - Agés", coords:[42.3664,-3.4503], diff:"MEDIA", des:"400m" },
-  { id:12, name:"Agés - Burgos", coords:[42.3440,-3.6969], diff:"BAJA", des:"100m" },
-  { id:13, name:"Burgos - Hontanas", coords:[42.3120,-4.0450], diff:"MEDIA", des:"300m" },
-  { id:14, name:"Hontanas - Frómista", coords:[42.2668,-4.4061], diff:"BAJA", des:"50m" },
-  { id:15, name:"Frómista - Carrión", coords:[42.3389,-4.6067], diff:"BAJA", des:"50m" },
-  { id:16, name:"Carrión - Terradillos", coords:[42.3610,-4.9248], diff:"BAJA", des:"100m" },
-  { id:17, name:"Terradillos - Sahagún", coords:[42.3719,-5.0315], diff:"BAJA", des:"50m" },
-  { id:18, name:"Sahagún - Bercianos", coords:[42.4230,-5.2215], diff:"BAJA", des:"50m" },
-  { id:19, name:"Bercianos - León", coords:[42.5987,-5.5671], diff:"BAJA", des:"100m" },
-  { id:20, name:"León - San Martín", coords:[42.5200,-5.8100], diff:"BAJA", des:"50m" },
-  { id:21, name:"San Martín - Astorga", coords:[42.4544,-6.0560], diff:"BAJA", des:"150m" },
-  { id:22, name:"Astorga - Foncebadón", coords:[42.4385,-6.3450], diff:"MEDIA", des:"600m" },
-  { id:23, name:"Foncebadón - Ponferrada", coords:[42.5455,-6.5936], diff:"ALTA", des:"-900m" },
-  { id:24, name:"Ponferrada - Villafranca", coords:[42.6074,-6.8115], diff:"BAJA", des:"100m" },
-  { id:25, name:"Villafranca - O Cebreiro", coords:[42.7077,-7.0423], diff:"ALTA", des:"1.000m" },
-  { id:26, name:"O Cebreiro - Triacastela", coords:[42.7565,-7.2403], diff:"MEDIA", des:"-600m" },
-  { id:27, name:"Triacastela - Sarria", coords:[42.7770,-7.4160], diff:"BAJA", des:"200m" },
-  { id:28, name:"Sarria - Portomarín", coords:[42.8075,-7.6160], diff:"MEDIA", des:"350m" },
-  { id:29, name:"Portomarín - Palas de Rei", coords:[42.8732,-7.8687], diff:"MEDIA", des:"400m" },
-  { id:30, name:"Palas de Rei - Arzúa", coords:[42.9265,-8.1634], diff:"MEDIA", des:"350m" },
-  { id:31, name:"Arzúa - O Pedrouzo", coords:[42.9100,-8.3600], diff:"BAJA", des:"150m" },
-  { id:32, name:"O Pedrouzo - Santiago", coords:[42.8870,-8.5100], diff:"BAJA", des:"200m" },
-  { id:33, name:"Santiago de Compostela", coords:[42.8806,-8.5464], diff:"META", des:"0m" }
+  { id: 1, name: "SJ Pied de Port - Roncesvalles", coords: [43.0125, -1.3148], diff: "ALTA", des: "1.250m" },
+  { id: 2, name: "Roncesvalles - Zubiri", coords: [42.9298, -1.5042], diff: "MEDIA", des: "400m" },
+  { id: 3, name: "Zubiri - Pamplona", coords: [42.8125, -1.6458], diff: "BAJA", des: "150m" },
+  { id: 4, name: "Pamplona - P. la Reina", coords: [42.6719, -1.8139], diff: "MEDIA", des: "450m" },
+  { id: 5, name: "P. la Reina - Estella", coords: [42.6715, -2.0315], diff: "BAJA", des: "200m" },
+  { id: 6, name: "Estella - Los Arcos", coords: [42.5684, -2.1917], diff: "BAJA", des: "150m" },
+  { id: 7, name: "Los Arcos - Logroño", coords: [42.4627, -2.445], diff: "BAJA", des: "100m" },
+  { id: 8, name: "Logroño - Nájera", coords: [42.4162, -2.7303], diff: "MEDIA", des: "300m" },
+  { id: 9, name: "Nájera - Sto. Domingo", coords: [42.4411, -2.9535], diff: "BAJA", des: "250m" },
+  { id: 10, name: "Sto. Domingo - Belorado", coords: [42.4194, -3.1904], diff: "BAJA", des: "150m" },
+  { id: 11, name: "Belorado - Agés", coords: [42.3664, -3.4503], diff: "MEDIA", des: "400m" },
+  { id: 12, name: "Agés - Burgos", coords: [42.3440, -3.6969], diff: "BAJA", des: "100m" },
+  { id: 13, name: "Burgos - Hontanas", coords: [42.3120, -4.0450], diff: "MEDIA", des: "300m" },
+  { id: 14, name: "Hontanas - Frómista", coords: [42.2668, -4.4061], diff: "BAJA", des: "50m" },
+  { id: 15, name: "Frómista - Carrión", coords: [42.3389, -4.6067], diff: "BAJA", des: "50m" },
+  { id: 16, name: "Carrión - Terradillos", coords: [42.3610, -4.9248], diff: "BAJA", des: "100m" },
+  { id: 17, name: "Terradillos - Sahagún", coords: [42.3719, -5.0315], diff: "BAJA", des: "50m" },
+  { id: 18, name: "Sahagún - Bercianos", coords: [42.4230, -5.2215], diff: "BAJA", des: "50m" },
+  { id: 19, name: "Bercianos - León", coords: [42.5987, -5.5671], diff: "BAJA", des: "100m" },
+  { id: 20, name: "León - San Martín", coords: [42.5200, -5.8100], diff: "BAJA", des: "50m" },
+  { id: 21, name: "San Martín - Astorga", coords: [42.4544, -6.0560], diff: "BAJA", des: "150m" },
+  { id: 22, name: "Astorga - Foncebadón", coords: [42.4385, -6.3450], diff: "MEDIA", des: "600m" },
+  { id: 23, name: "Foncebadón - Ponferrada", coords: [42.5455, -6.5936], diff: "ALTA", des: "-900m" },
+  { id: 24, name: "Ponferrada - Villafranca", coords: [42.6074, -6.8115], diff: "BAJA", des: "100m" },
+  { id: 25, name: "Villafranca - O Cebreiro", coords: [42.7077, -7.0423], diff: "ALTA", des: "1.000m" },
+  { id: 26, name: "O Cebreiro - Triacastela", coords: [42.7565, -7.2403], diff: "MEDIA", des: "-600m" },
+  { id: 27, name: "Triacastela - Sarria", coords: [42.7770, -7.4160], diff: "BAJA", des: "200m" },
+  { id: 28, name: "Sarria - Portomarín", coords: [42.8075, -7.6160], diff: "MEDIA", des: "350m" },
+  { id: 29, name: "Portomarín - Palas de Rei", coords: [42.8732, -7.8687], diff: "MEDIA", des: "400m" },
+  { id: 30, name: "Palas de Rei - Arzúa", coords: [42.9265, -8.1634], diff: "MEDIA", des: "350m" },
+  { id: 31, name: "Arzúa - O Pedrouzo", coords: [42.9100, -8.3600], diff: "BAJA", des: "150m" },
+  { id: 32, name: "O Pedrouzo - Santiago", coords: [42.8870, -8.5100], diff: "BAJA", des: "200m" },
+  { id: 33, name: "Santiago de Compostela", coords: [42.8806, -8.5464], diff: "META", des: "0m" }
 ];
 
 const FULL_PATH = STAGES.map(s => s.coords);
@@ -77,7 +77,7 @@ function MapController({ userPos, tracking, targetCoords }) {
   const map = useMap();
   useEffect(() => {
     if (tracking && userPos) {
-      map.setView(userPos, 18, { animate: true });
+      map.setView(userPos, 18, { animate: true, duration: 1 });
     } else if (targetCoords && !tracking) {
       map.flyTo(targetCoords, 14, { duration: 1.5 });
     }
@@ -92,62 +92,66 @@ export default function App() {
   const [userPos, setUserPos] = useState(null);
   const [isTracking, setIsTracking] = useState(true);
   const [booting, setBooting] = useState(true);
-  const [showSos, setShowSos] = useState(false);
+  const [gpsStatus, setGpsStatus] = useState("SENSORES OFF");
   
   const lastPos = useRef(null);
   const lastStepTime = useRef(0);
 
-  // MOTOR DE SENSORES Y PODÓMETRO
-  const startTacticalSystem = async () => {
-    // 1. ACTIVAR GPS DE ALTA PRECISIÓN (KM)
+  // FUNCIÓN MAESTRA DE ACTIVACIÓN DE SENSORES
+  const activateSensors = async () => {
+    setGpsStatus("INICIALIZANDO...");
+    
+    // 1. ACTIVAR GPS (KM)
     if ("geolocation" in navigator) {
       navigator.geolocation.watchPosition((p) => {
         const currentPos = [p.coords.latitude, p.coords.longitude];
+        setGpsStatus("GPS: ONLINE");
         
         if (lastPos.current) {
-          const R = 6371;
+          const R = 6371; // Radio de la Tierra en KM
           const dLat = (currentPos[0] - lastPos.current[0]) * Math.PI / 180;
           const dLon = (currentPos[1] - lastPos.current[1]) * Math.PI / 180;
           const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
                     Math.cos(lastPos.current[0] * Math.PI / 180) * Math.cos(currentPos[0] * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-          const d = R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+          const d = R * c;
           
-          // Solo sumamos si el movimiento es real (más de 2 metros)
-          if (d > 0.002) setDistance(prev => prev + d);
+          if (d > 0.003) { // Umbral de 3 metros para evitar ruido
+            setDistance(prev => prev + d);
+          }
         }
-        
         lastPos.current = currentPos;
         setUserPos(currentPos);
-      }, (err) => alert("Error GPS: " + err.message), 
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
+      }, 
+      (err) => setGpsStatus(`ERROR: ${err.message}`),
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
     }
 
-    // 2. ACTIVAR ACELERÓMETRO (PASOS)
+    // 2. ACTIVAR PODÓMETRO (PASOS)
     if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
       try {
-        const response = await DeviceMotionEvent.requestPermission();
-        if (response === 'granted') {
-          window.addEventListener('devicemotion', handleMotion, true);
+        const permission = await DeviceMotionEvent.requestPermission();
+        if (permission === 'granted') {
+          window.addEventListener('devicemotion', handleStepDetection, true);
         }
-      } catch (e) { alert("Permiso de Movimiento requerido para el podómetro"); }
+      } catch (e) { alert("Se requiere permiso de movimiento"); }
     } else {
-      window.addEventListener('devicemotion', handleMotion, true);
+      window.addEventListener('devicemotion', handleStepDetection, true);
     }
     setBooting(false);
   };
 
-  const handleMotion = (e) => {
+  const handleStepDetection = (e) => {
     const acc = e.accelerationIncludingGravity;
     if (!acc) return;
-
-    // Calculamos la fuerza total del movimiento (Vector Magnitud)
-    const totalForce = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
     
-    // Umbral de paso: 12.0 es caminar normal. 
-    // Filtro de tiempo: Evitamos contar 2 veces el mismo paso (300ms)
-    if (totalForce > 12.0) {
+    // Cálculo de fuerza G total
+    const force = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
+    
+    // Filtro para detectar un paso real (Umbral 12.5)
+    if (force > 12.5) {
       const now = Date.now();
-      if (now - lastStepTime.current > 300) {
+      if (now - lastStepTime.current > 300) { // Máximo 3 pasos por segundo
         setSteps(prev => prev + 1);
         lastStepTime.current = now;
       }
@@ -159,22 +163,12 @@ export default function App() {
       <style>{STYLES}</style>
 
       {booting && (
-        <div style={{position:'fixed', inset:0, background:'black', zIndex:10000, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', textAlign:'center', padding:20}}>
+        <div style={{position:'fixed', inset:0, background:'black', zIndex:10000, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:30}}>
           <Zap size={100} color="var(--orange)" className="animate-pulse mb-8" />
-          <h1 style={{color:'var(--orange)', marginBottom:20}}>SISTEMA TÁCTICO S-33</h1>
-          <button onClick={startTacticalSystem} style={{background:'var(--orange)', padding:'30px', borderRadius:'12px', color:'black', fontWeight:900, border:'none', fontSize:'18px', boxShadow:'0 0 30px var(--orange)'}}>
-            ACTIVAR PODÓMETRO Y GPS
+          <h1 style={{color:'var(--orange)', textAlign:'center', fontSize:18, marginBottom:40}}>SISTEMA DE RASTREO TÁCTICO</h1>
+          <button onClick={activateSensors} style={{background:'var(--orange)', padding:'30px', borderRadius:'12px', color:'black', fontWeight:900, border:'none', fontSize:'18px', width:'100%', boxShadow:'0 0 30px var(--orange)'}}>
+            CONECTAR SENSORES
           </button>
-          <p style={{marginTop:20, fontSize:10, opacity:0.6}}>Pulsa para autorizar el seguimiento de pasos y kilómetros</p>
-        </div>
-      )}
-
-      {showSos && (
-        <div className="sos-dropdown">
-          <div style={{textAlign:'center', fontWeight:900, fontSize:20}}>EMERGENCIA</div>
-          <a href="tel:112" className="sos-call">LLAMAR 112</a>
-          <a href="tel:062" className="sos-call" style={{background:'#eee'}}>GUARDIA CIVIL</a>
-          <button onClick={() => setShowSos(false)} style={{background:'none', border:'none', color:'white'}}>CERRAR</button>
         </div>
       )}
 
@@ -183,7 +177,7 @@ export default function App() {
           setActiveStage(STAGES.find(x => x.id === parseInt(e.target.value)));
           setIsTracking(false);
         }}>
-          {STAGES.map(s => <option key={s.id} value={s.id}>OBJETIVO: {s.name}</option>)}
+          {STAGES.map(s => <option key={s.id} value={s.id}>ETAPA {s.id}: {s.name}</option>)}
         </select>
       </div>
 
@@ -192,9 +186,11 @@ export default function App() {
         <div style={{marginTop:5}}><Navigation size={12}/> {distance.toFixed(3)} KM</div>
       </div>
 
+      <div className="gps-status">{gpsStatus}</div>
+
       <div className="overlay-info">
-        <div><AlertTriangle size={14} color="var(--orange)"/> DIFICULTAD: <b>{activeStage.diff}</b></div>
-        <div><Mountain size={14} color="var(--orange)"/> DESNIVEL: <b>{activeStage.des}</b></div>
+        <div>DIFICULTAD: <b>{activeStage.diff}</b></div>
+        <div>DESNIVEL: <b>{activeStage.des}</b></div>
       </div>
 
       <MapContainer center={activeStage.coords} zoom={14} zoomControl={false}>
@@ -216,18 +212,17 @@ export default function App() {
       </MapContainer>
 
       <div className="bottom-console">
-        <button onClick={() => window.open(`https://wa.me/?text=GPS: ${userPos}`)} className="btn-ui btn-wsap">
-          <MessageCircle size={28}/>WSAP
-        </button>
-        <button onClick={() => setIsTracking(!isTracking)} className="btn-ui btn-track">
+        <button onClick={() => {
+          if(!userPos) return alert("Sin señal satélite");
+          window.open(`https://wa.me/?text=POSICION: http://googleusercontent.com/maps.google.com/3{userPos[0]},${userPos[1]}`);
+        }} className="btn-ui btn-wsap"><MessageCircle size={28}/>WSAP</button>
+        
+        <button onClick={() => setIsTracking(!isTracking)} className={`btn-ui btn-track ${isTracking ? 'active' : ''}`}>
           <Crosshair size={28}/>{isTracking ? 'LOCKED' : 'TRACK'}
         </button>
-        <button onClick={() => {setSteps(0); setDistance(0);}} className="btn-ui btn-rest">
-          <RotateCcw size={28}/>REST
-        </button>
-        <button onClick={() => setShowSos(true)} className="btn-ui btn-sos">
-          <ShieldAlert size={28}/>SOS
-        </button>
+        
+        <button onClick={() => {setSteps(0); setDistance(0);}} className="btn-ui btn-rest"><RotateCcw size={28}/>REST</button>
+        <button onClick={() => alert("EMERGENCIA LLAMANDO...")} className="btn-ui btn-sos"><ShieldAlert size={28}/>SOS</button>
       </div>
     </div>
   );
