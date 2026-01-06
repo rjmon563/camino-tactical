@@ -12,6 +12,7 @@ const STYLES = `
 html, body, #root { margin: 0; height: 100%; background: var(--black); font-family: 'JetBrains Mono', monospace; color: white; overflow: hidden; position: fixed; width: 100%; }
 .leaflet-container { height: 100%; width: 100%; background: #000; filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(120%); z-index: 1; }
 
+/* MIRA TELESCÓPICA NARANJA */
 .sniper-scope-marker { position: relative; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
 .scope-cross-h, .scope-cross-v { position: absolute; background: var(--orange); box-shadow: 0 0 12px var(--orange); z-index: 10; }
 .scope-cross-h { width: 100%; height: 2px; }
@@ -32,7 +33,12 @@ select { background: var(--gray); color: var(--orange); border: 1px solid var(--
 .btn-sos { background: #400 !important; border: 1px solid red !important; color: white !important; }
 
 .overlay-info { position: fixed; bottom: 135px; left: 20px; right: 20px; background: rgba(0,0,0,0.9); border-left: 4px solid var(--orange); padding: 12px; border-radius: 4px; z-index: 1000; display: flex; justify-content: space-between; font-size: 11px; border-top: 1px solid #333; }
-.gps-status { position: fixed; top: 160px; right: 20px; z-index: 1000; font-size: 9px; color: #666; background: rgba(0,0,0,0.5); padding: 2px 5px; }
+
+/* MENÚ SOS DESPLEGABLE REPARADO */
+.sos-dropdown { position: fixed; bottom: 130px; left: 20px; right: 20px; z-index: 9000; background: #200; border: 3px solid red; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 0 50px rgba(255,0,0,0.5); }
+.sos-call-btn { background: white; color: red; padding: 18px; border-radius: 8px; text-align: center; font-weight: 900; text-decoration: none; font-size: 18px; display: block; }
+
+.gps-status { position: fixed; top: 160px; right: 20px; z-index: 1000; font-size: 9px; color: var(--orange); background: rgba(0,0,0,0.7); padding: 4px 8px; border: 1px solid var(--orange); }
 `;
 
 const STAGES = [
@@ -77,7 +83,7 @@ function MapController({ userPos, tracking, targetCoords }) {
   const map = useMap();
   useEffect(() => {
     if (tracking && userPos) {
-      map.setView(userPos, 18, { animate: true, duration: 1 });
+      map.setView(userPos, 18, { animate: true, duration: 1.5 });
     } else if (targetCoords && !tracking) {
       map.flyTo(targetCoords, 14, { duration: 1.5 });
     }
@@ -92,67 +98,56 @@ export default function App() {
   const [userPos, setUserPos] = useState(null);
   const [isTracking, setIsTracking] = useState(true);
   const [booting, setBooting] = useState(true);
-  const [gpsStatus, setGpsStatus] = useState("SENSORES OFF");
+  const [showSos, setShowSos] = useState(false);
+  const [gpsLog, setGpsLog] = useState("SENSORES OFF");
   
   const lastPos = useRef(null);
   const lastStepTime = useRef(0);
 
-  // FUNCIÓN MAESTRA DE ACTIVACIÓN DE SENSORES
-  const activateSensors = async () => {
-    setGpsStatus("INICIALIZANDO...");
+  const startSystem = async () => {
+    setGpsLog("INICIALIZANDO GPS...");
     
-    // 1. ACTIVAR GPS (KM)
+    // GPS ALTA PRECISIÓN
     if ("geolocation" in navigator) {
       navigator.geolocation.watchPosition((p) => {
         const currentPos = [p.coords.latitude, p.coords.longitude];
-        setGpsStatus("GPS: ONLINE");
+        setGpsLog("GPS: ONLINE");
         
         if (lastPos.current) {
-          const R = 6371; // Radio de la Tierra en KM
+          const R = 6371;
           const dLat = (currentPos[0] - lastPos.current[0]) * Math.PI / 180;
           const dLon = (currentPos[1] - lastPos.current[1]) * Math.PI / 180;
           const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
                     Math.cos(lastPos.current[0] * Math.PI / 180) * Math.cos(currentPos[0] * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-          const d = R * c;
-          
-          if (d > 0.003) { // Umbral de 3 metros para evitar ruido
-            setDistance(prev => prev + d);
-          }
+          const d = R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+          if (d > 0.003) setDistance(prev => prev + d);
         }
         lastPos.current = currentPos;
         setUserPos(currentPos);
-      }, 
-      (err) => setGpsStatus(`ERROR: ${err.message}`),
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
+      }, (err) => setGpsLog(`ERROR GPS: ${err.code}`), 
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
     }
 
-    // 2. ACTIVAR PODÓMETRO (PASOS)
+    // PODÓMETRO
     if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
       try {
-        const permission = await DeviceMotionEvent.requestPermission();
-        if (permission === 'granted') {
-          window.addEventListener('devicemotion', handleStepDetection, true);
-        }
-      } catch (e) { alert("Se requiere permiso de movimiento"); }
+        const resp = await DeviceMotionEvent.requestPermission();
+        if (resp === 'granted') window.addEventListener('devicemotion', handleMotion, true);
+      } catch (e) { console.error(e); }
     } else {
-      window.addEventListener('devicemotion', handleStepDetection, true);
+      window.addEventListener('devicemotion', handleMotion, true);
     }
     setBooting(false);
   };
 
-  const handleStepDetection = (e) => {
+  const handleMotion = (e) => {
     const acc = e.accelerationIncludingGravity;
     if (!acc) return;
-    
-    // Cálculo de fuerza G total
     const force = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
-    
-    // Filtro para detectar un paso real (Umbral 12.5)
     if (force > 12.5) {
       const now = Date.now();
-      if (now - lastStepTime.current > 300) { // Máximo 3 pasos por segundo
-        setSteps(prev => prev + 1);
+      if (now - lastStepTime.current > 320) {
+        setSteps(s => s + 1);
         lastStepTime.current = now;
       }
     }
@@ -163,12 +158,21 @@ export default function App() {
       <style>{STYLES}</style>
 
       {booting && (
-        <div style={{position:'fixed', inset:0, background:'black', zIndex:10000, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:30}}>
+        <div style={{position:'fixed', inset:0, background:'black', zIndex:10000, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center'}}>
           <Zap size={100} color="var(--orange)" className="animate-pulse mb-8" />
-          <h1 style={{color:'var(--orange)', textAlign:'center', fontSize:18, marginBottom:40}}>SISTEMA DE RASTREO TÁCTICO</h1>
-          <button onClick={activateSensors} style={{background:'var(--orange)', padding:'30px', borderRadius:'12px', color:'black', fontWeight:900, border:'none', fontSize:'18px', width:'100%', boxShadow:'0 0 30px var(--orange)'}}>
-            CONECTAR SENSORES
+          <button onClick={startSystem} style={{background:'var(--orange)', padding:'30px', borderRadius:'12px', color:'black', fontWeight:900, border:'none', fontSize:'18px', boxShadow:'0 0 40px var(--orange)'}}>
+            ACTIVAR SENSORES TÁCTICOS
           </button>
+        </div>
+      )}
+
+      {/* MENÚ SOS REPARADO */}
+      {showSos && (
+        <div className="sos-dropdown">
+          <div style={{textAlign:'center', fontWeight:900, fontSize:22, color:'white', marginBottom:10}}>EMERGENCIA</div>
+          <a href="tel:112" className="sos-call-btn">LLAMAR AL 112</a>
+          <a href="tel:062" className="sos-call-btn" style={{background:'#eee'}}>GUARDIA CIVIL</a>
+          <button onClick={() => setShowSos(false)} style={{background:'none', border:'none', color:'white', fontWeight:700, marginTop:10}}>CANCELAR</button>
         </div>
       )}
 
@@ -186,7 +190,7 @@ export default function App() {
         <div style={{marginTop:5}}><Navigation size={12}/> {distance.toFixed(3)} KM</div>
       </div>
 
-      <div className="gps-status">{gpsStatus}</div>
+      <div className="gps-status">{gpsLog}</div>
 
       <div className="overlay-info">
         <div>DIFICULTAD: <b>{activeStage.diff}</b></div>
@@ -213,16 +217,23 @@ export default function App() {
 
       <div className="bottom-console">
         <button onClick={() => {
-          if(!userPos) return alert("Sin señal satélite");
-          window.open(`https://wa.me/?text=POSICION: http://googleusercontent.com/maps.google.com/3{userPos[0]},${userPos[1]}`);
-        }} className="btn-ui btn-wsap"><MessageCircle size={28}/>WSAP</button>
+          if(!userPos) return alert("Buscando señal...");
+          window.open(`https://wa.me/?text=MI POSICION: http://googleusercontent.com/maps.google.com/4{userPos[0]},${userPos[1]}`);
+        }} className="btn-ui btn-wsap">
+          <MessageCircle size={28}/>WSAP
+        </button>
         
         <button onClick={() => setIsTracking(!isTracking)} className={`btn-ui btn-track ${isTracking ? 'active' : ''}`}>
           <Crosshair size={28}/>{isTracking ? 'LOCKED' : 'TRACK'}
         </button>
         
-        <button onClick={() => {setSteps(0); setDistance(0);}} className="btn-ui btn-rest"><RotateCcw size={28}/>REST</button>
-        <button onClick={() => alert("EMERGENCIA LLAMANDO...")} className="btn-ui btn-sos"><ShieldAlert size={28}/>SOS</button>
+        <button onClick={() => {setSteps(0); setDistance(0);}} className="btn-ui btn-rest">
+          <RotateCcw size={28}/>REST
+        </button>
+        
+        <button onClick={() => setShowSos(true)} className="btn-ui btn-sos">
+          <ShieldAlert size={28}/>SOS
+        </button>
       </div>
     </div>
   );
