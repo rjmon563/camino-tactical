@@ -3,76 +3,52 @@ import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import {
-  MessageCircle, Crosshair, RotateCcw, AlertTriangle, Zap, Activity, Navigation, Mountain, ShieldAlert
+  MessageCircle, Crosshair, RotateCcw, AlertTriangle, Zap, Activity, Navigation, Mountain, ShieldAlert, Phone
 } from 'lucide-react';
 
 const STYLES = `
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
-:root { --yellow:#facc15; --red:#ff0000; --black:#050505; --cyan:#00e5ff; --green:#22c55e; --orange:#f97316; }
+:root { --orange:#f97316; --yellow:#facc15; --red:#ff0000; --black:#0b0b0b; --gray:#1a1a1a; --cyan:#00e5ff; }
 html, body, #root { margin: 0; height: 100%; background: var(--black); font-family: 'JetBrains Mono', monospace; color: white; overflow: hidden; position: fixed; width: 100%; }
 .leaflet-container { height: 100%; width: 100%; background: #000; filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(120%); z-index: 1; }
 
-/* EL FRANCOTIRADOR (MIRA ROJA) */
+/* FRANCOTIRADOR NARANJA */
 .sniper-scope-marker { position: relative; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
-.scope-cross-h, .scope-cross-v { position: absolute; background: red; box-shadow: 0 0 12px red; z-index: 10; }
+.scope-cross-h, .scope-cross-v { position: absolute; background: var(--orange); box-shadow: 0 0 12px var(--orange); z-index: 10; }
 .scope-cross-h { width: 100%; height: 2px; }
 .scope-cross-v { width: 2px; height: 100%; }
-.scope-circle { width: 44px; height: 44px; border: 3px solid red; border-radius: 50%; box-shadow: 0 0 15px red; }
+.scope-circle { width: 44px; height: 44px; border: 3px solid var(--orange); border-radius: 50%; box-shadow: 0 0 15px var(--orange); }
 
-.tactical-stats { position: fixed; top: 85px; right: 20px; z-index: 1000; background: rgba(0,0,0,0.9); border: 2px solid var(--cyan); padding: 10px; border-radius: 8px; font-size: 12px; border-left: 5px solid var(--cyan); }
+.tactical-stats { position: fixed; top: 85px; right: 20px; z-index: 1000; background: rgba(0,0,0,0.85); border: 1px solid var(--orange); padding: 12px; border-radius: 4px; font-size: 11px; color: var(--orange); }
 .selector-container { position: fixed; top: 20px; left: 20px; right: 20px; z-index: 5000; }
-select { background: #111; color: var(--yellow); border: 2px solid var(--yellow); padding: 12px; font-family: 'JetBrains Mono'; border-radius: 6px; width: 100%; font-size: 14px; font-weight: 800; outline: none; }
-.bottom-console { position: fixed; bottom: 0; left: 0; right: 0; background: #0a0a0a; border-top: 3px solid var(--yellow); display: grid; grid-template-columns: repeat(4, 1fr); padding: 15px 10px 35px 10px; z-index: 6000; gap: 8px; }
-.btn-ui { border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 75px; color: white; font-weight: 900; cursor: pointer; font-size: 9px; }
-.overlay-info { position: fixed; bottom: 135px; left: 20px; right: 20px; background: rgba(0,0,0,0.9); border: 1px solid var(--yellow); padding: 10px; border-radius: 8px; z-index: 1000; display: flex; justify-content: space-between; font-size: 11px; }
-.sos-menu { position: fixed; top: 150px; left: 20px; z-index: 7000; background: #900; border: 2px solid white; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 0 30px black; }
-.sos-option { background: white; color: red; padding: 10px; border-radius: 5px; font-weight: 800; text-align: center; text-decoration: none; font-size: 12px; border: none; }
+select { background: var(--gray); color: var(--orange); border: 1px solid var(--orange); padding: 12px; font-family: 'JetBrains Mono'; border-radius: 4px; width: 100%; font-size: 14px; font-weight: 800; outline: none; }
+
+.bottom-console { position: fixed; bottom: 0; left: 0; right: 0; background: #050505; border-top: 2px solid var(--orange); display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px 10px 30px 10px; z-index: 6000; gap: 10px; }
+.btn-ui { border-radius: 8px; border: 1px solid #333; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 70px; color: white; font-weight: 700; cursor: pointer; font-size: 10px; background: #151515; text-decoration: none; }
+.btn-ui.active-orange { background: var(--orange) !important; color: black !important; border: none; }
+
+.overlay-info { position: fixed; bottom: 125px; left: 20px; right: 20px; background: rgba(0,0,0,0.9); border-left: 4px solid var(--orange); padding: 12px; border-radius: 4px; z-index: 1000; display: flex; justify-content: space-between; font-size: 10px; border-top: 1px solid #333; }
+
+/* MENÚ SOS MEJORADO */
+.sos-dropdown { position: fixed; bottom: 120px; left: 20px; right: 20px; z-index: 8000; background: #400; border: 2px solid var(--red); border-radius: 10px; padding: 15px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 0 40px rgba(0,0,0,1); }
+.sos-btn-call { background: white; color: red; padding: 15px; border-radius: 6px; text-align: center; font-weight: 900; text-decoration: none; font-size: 16px; border: none; }
 `;
 
 const STAGES = [
   { id:1, name:"SJ Pied de Port - Roncesvalles", coords:[43.0125,-1.3148], diff:"ALTA", des:"1.250m" },
   { id:2, name:"Roncesvalles - Zubiri", coords:[42.9298,-1.5042], diff:"MEDIA", des:"400m" },
   { id:3, name:"Zubiri - Pamplona", coords:[42.8125,-1.6458], diff:"BAJA", des:"150m" },
-  { id:4, name:"Pamplona - P. la Reina", coords:[42.6719,-1.8139], diff:"MEDIA", des:"450m" },
-  { id:5, name:"P. la Reina - Estella", coords:[42.6715,-2.0315], diff:"BAJA", des:"200m" },
-  { id:6, name:"Estella - Los Arcos", coords:[42.5684,-2.1917], diff:"BAJA", des:"150m" },
-  { id:7, name:"Los Arcos - Logroño", coords:[42.4627,-2.445], diff:"BAJA", des:"100m" },
-  { id:8, name:"Logroño - Nájera", coords:[42.4162,-2.7303], diff:"MEDIA", des:"300m" },
-  { id:9, name:"Nájera - Sto. Domingo", coords:[42.4411,-2.9535], diff:"BAJA", des:"250m" },
-  { id:10, name:"Sto. Domingo - Belorado", coords:[42.4194,-3.1904], diff:"BAJA", des:"150m" },
-  { id:11, name:"Belorado - Agés", coords:[42.3664,-3.4503], diff:"MEDIA", des:"400m" },
-  { id:12, name:"Agés - Burgos", coords:[42.3440,-3.6969], diff:"BAJA", des:"100m" },
-  { id:13, name:"Burgos - Hontanas", coords:[42.3120,-4.0450], diff:"MEDIA", des:"300m" },
-  { id:14, name:"Hontanas - Frómista", coords:[42.2668,-4.4061], diff:"BAJA", des:"50m" },
-  { id:15, name:"Frómista - Carrión", coords:[42.3389,-4.6067], diff:"BAJA", des:"50m" },
-  { id:16, name:"Carrión - Terradillos", coords:[42.3610,-4.9248], diff:"BAJA", des:"100m" },
-  { id:17, name:"Terradillos - Sahagún", coords:[42.3719,-5.0315], diff:"BAJA", des:"50m" },
-  { id:18, name:"Sahagún - Bercianos", coords:[42.4230,-5.2215], diff:"BAJA", des:"50m" },
-  { id:19, name:"Bercianos - León", coords:[42.5987,-5.5671], diff:"BAJA", des:"100m" },
-  { id:20, name:"León - San Martín", coords:[42.5200,-5.8100], diff:"BAJA", des:"50m" },
-  { id:21, name:"San Martín - Astorga", coords:[42.4544,-6.0560], diff:"BAJA", des:"150m" },
-  { id:22, name:"Astorga - Foncebadón", coords:[42.4385,-6.3450], diff:"MEDIA", des:"600m" },
-  { id:23, name:"Foncebadón - Ponferrada", coords:[42.5455,-6.5936], diff:"ALTA", des:"-900m" },
-  { id:24, name:"Ponferrada - Villafranca", coords:[42.6074,-6.8115], diff:"BAJA", des:"100m" },
-  { id:25, name:"Villafranca - O Cebreiro", coords:[42.7077,-7.0423], diff:"ALTA", des:"1.000m" },
-  { id:26, name:"O Cebreiro - Triacastela", coords:[42.7565,-7.2403], diff:"MEDIA", des:"-600m" },
-  { id:27, name:"Triacastela - Sarria", coords:[42.7770,-7.4160], diff:"BAJA", des:"200m" },
-  { id:28, name:"Sarria - Portomarín", coords:[42.8075,-7.6160], diff:"MEDIA", des:"350m" },
-  { id:29, name:"Portomarín - Palas de Rei", coords:[42.8732,-7.8687], diff:"MEDIA", des:"400m" },
-  { id:30, name:"Palas de Rei - Arzúa", coords:[42.9265,-8.1634], diff:"MEDIA", des:"350m" },
-  { id:31, name:"Arzúa - O Pedrouzo", coords:[42.9100,-8.3600], diff:"BAJA", des:"150m" },
   { id:32, name:"O Pedrouzo - Santiago", coords:[42.8870,-8.5100], diff:"BAJA", des:"200m" },
   { id:33, name:"Santiago de Compostela", coords:[42.8806,-8.5464], diff:"META", des:"0m" }
 ];
 
 const FULL_PATH = STAGES.map(s => s.coords);
 
-// CONTROLADOR DE POSICIÓN REFORZADO (PRECISIÓN TOTAL)
 function MapController({ userPos, tracking, targetCoords }) {
   const map = useMap();
   useEffect(() => {
     if (tracking && userPos) {
-      map.setView(userPos, 18, { animate: true, duration: 0.5 });
+      map.setView(userPos, 18, { animate: true });
     } else if (targetCoords && !tracking) {
       map.flyTo(targetCoords, 14, { duration: 1.5 });
     }
@@ -85,45 +61,31 @@ export default function App() {
   const [steps, setSteps] = useState(0);
   const [distance, setDistance] = useState(0);
   const [userPos, setUserPos] = useState(null);
-  const [isTracking, setIsTracking] = useState(true); // Tracking ON por defecto
+  const [isTracking, setIsTracking] = useState(true);
   const [booting, setBooting] = useState(true);
-  const [showSosMenu, setShowSosMenu] = useState(false);
+  const [showSos, setShowSos] = useState(false);
   const lastPos = useRef(null);
   const lastStepTime = useRef(0);
 
-  const startTacticalSystem = async () => {
-    // ACTIVAR GPS EN TIEMPO REAL (MÁXIMA PRIORIDAD)
+  const startSystem = async () => {
     if ("geolocation" in navigator) {
       navigator.geolocation.watchPosition((p) => {
-        const currentLat = p.coords.latitude;
-        const currentLon = p.coords.longitude;
-        const newPos = [currentLat, currentLon];
-        
-        // Actualizar podómetro GPS si hay movimiento
+        const newPos = [p.coords.latitude, p.coords.longitude];
         if (lastPos.current) {
           const R = 6371;
-          const dLat = (currentLat - lastPos.current[0]) * Math.PI / 180;
-          const dLon = (currentLon - lastPos.current[1]) * Math.PI / 180;
-          const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lastPos.current[0] * Math.PI/180) * Math.cos(currentLat * Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-          const d = R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+          const dLat = (newPos[0]-lastPos.current[0])*Math.PI/180;
+          const dLon = (newPos[1]-lastPos.current[1])*Math.PI/180;
+          const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lastPos.current[0]*Math.PI/180)*Math.cos(newPos[0]*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+          const d = R * (2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
           if (d > 0.002) setDistance(prev => prev + d);
         }
-        
         lastPos.current = newPos;
-        setUserPos(newPos); // Mueve la mira telescópica inmediatamente
-      }, (err) => console.error(err), { 
-        enableHighAccuracy: true, 
-        maximumAge: 0, 
-        timeout: 5000 
-      });
+        setUserPos(newPos);
+      }, null, { enableHighAccuracy: true });
     }
-
-    // ACTIVAR SENSORES DE MOVIMIENTO
     if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-      try {
-        const permission = await DeviceMotionEvent.requestPermission();
-        if (permission === 'granted') window.addEventListener('devicemotion', handleMotion);
-      } catch (e) { alert("Permisos de movimiento denegados"); }
+      const p = await DeviceMotionEvent.requestPermission();
+      if (p === 'granted') window.addEventListener('devicemotion', handleMotion);
     } else {
       window.addEventListener('devicemotion', handleMotion);
     }
@@ -146,50 +108,43 @@ export default function App() {
 
       {booting && (
         <div style={{position:'fixed', inset:0, background:'black', zIndex:10000, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center'}}>
-          <Zap size={80} color="var(--yellow)" className="animate-pulse mb-8" />
-          <button onClick={startTacticalSystem} style={{background:'var(--yellow)', padding:'30px', borderRadius:'15px', color:'black', fontWeight:900, border:'none', fontSize:'18px', boxShadow:'0 0 25px var(--yellow)'}}>
-            ACTIVAR RASTREO Y SENSORES
-          </button>
+          <Zap size={80} color="var(--orange)" className="animate-pulse mb-8" />
+          <button onClick={startSystem} style={{background:'var(--orange)', padding:'25px 50px', borderRadius:'8px', color:'black', fontWeight:900, border:'none', fontSize:'16px'}}>INICIAR RASTREO TÁCTICO</button>
         </div>
       )}
 
-      {/* MENÚ SOS */}
-      <button style={{position:'fixed', top:85, left:20, zIndex:2000, background:'red', borderRadius:'50%', width:55, height:55, color:'white', border:'none'}} onClick={() => setShowSosMenu(!showSosMenu)}>
-        <ShieldAlert size={30} />
-      </button>
-
-      {showSosMenu && (
-        <div className="sos-menu">
-          <div style={{fontWeight:900, textAlign:'center', color:'white'}}>EMERGENCIA</div>
-          <a href="tel:112" className="sos-option">LLAMAR 112</a>
-          <a href="tel:062" className="sos-option">GUARDIA CIVIL</a>
-          <button onClick={() => setShowSosMenu(false)} style={{background:'none', border:'none', color:'white', fontSize:'10px'}}>CERRAR</button>
+      {/* MENÚ SOS DESPLEGABLE */}
+      {showSos && (
+        <div className="sos-dropdown">
+          <div style={{textAlign:'center', fontWeight:900, fontSize:18}}>CENTRO DE EMERGENCIAS</div>
+          <a href="tel:112" className="sos-btn-call">LLAMAR 112</a>
+          <a href="tel:062" className="sos-btn-call" style={{background:'#eee'}}>GUARDIA CIVIL</a>
+          <button onClick={() => setShowSos(false)} style={{background:'none', border:'none', color:'white', marginTop:10}}>CANCELAR</button>
         </div>
       )}
 
       <div className="selector-container">
         <select value={activeStage.id} onChange={(e) => {
-          const s = STAGES.find(x => x.id === parseInt(e.target.value));
-          setActiveStage(s);
-          setIsTracking(false); // Soltar GPS para ver la etapa elegida
+          setActiveStage(STAGES.find(x => x.id === parseInt(e.target.value)));
+          setIsTracking(false);
         }}>
-          {STAGES.map(s => <option key={s.id} value={s.id}>ETAPA {s.id}: {s.name}</option>)}
+          {STAGES.map(s => <option key={s.id} value={s.id}>OBJETIVO: {s.name}</option>)}
         </select>
       </div>
 
       <div className="tactical-stats">
-        <div style={{color:'var(--yellow)'}}><Activity size={14}/> <b>{steps} PASOS</b></div>
-        <div style={{color:'var(--cyan)', marginTop:'5px'}}><Navigation size={14}/> <b>{distance.toFixed(3)} KM</b></div>
+        <div><Activity size={12}/> {steps} PASOS</div>
+        <div style={{marginTop:5}}><Navigation size={12}/> {distance.toFixed(3)} KM</div>
       </div>
 
       <div className="overlay-info">
-        <div><AlertTriangle size={14} color="var(--orange)"/> DIFICULTAD: <b>{activeStage.diff}</b></div>
-        <div><Mountain size={14} color="var(--cyan)"/> DESNIVEL: <b>{activeStage.des}</b></div>
+        <div>DIFICULTAD: <span style={{color:'var(--orange)'}}>{activeStage.diff}</span></div>
+        <div>DESNIVEL: <span style={{color:'var(--orange)'}}>{activeStage.des}</span></div>
       </div>
 
       <MapContainer center={activeStage.coords} zoom={14} zoomControl={false}>
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <Polyline positions={FULL_PATH} pathOptions={{ color: '#facc15', weight: 6 }} />
+        <Polyline positions={FULL_PATH} pathOptions={{ color: '#f97316', weight: 5 }} />
         
         {userPos && (
           <Marker position={userPos} icon={L.divIcon({
@@ -206,18 +161,20 @@ export default function App() {
       </MapContainer>
 
       <div className="bottom-console">
-        <button onClick={() => {
-          const coords = userPos ? `${userPos[0]},${userPos[1]}` : "Sin Señal";
-          window.open(`https://wa.me/?text=POSICIÓN TÁCTICA: http://google.com/maps?q=${coords}`);
-        }} className="btn-ui" style={{background:'var(--green)', color:'black'}}><MessageCircle size={28}/>WSAP GPS</button>
+        <button onClick={() => window.open(`https://wa.me/?text=GPS: ${userPos}`)} className="btn-ui"><MessageCircle size={24}/>WSAP</button>
         
-        <button onClick={() => setIsTracking(!isTracking)} className="btn-ui" style={{background: isTracking ? 'var(--cyan)' : '#222', color: isTracking ? 'black' : 'white'}}>
-          <Crosshair size={28}/>{isTracking ? 'LOCKED' : 'TRACK'}
+        <button onClick={() => setIsTracking(!isTracking)} className={`btn-ui ${isTracking ? 'active-orange' : ''}`}>
+          <Crosshair size={24}/>{isTracking ? 'LOCKED' : 'TRACK'}
         </button>
         
-        <button onClick={() => {setSteps(0); setDistance(0);}} className="btn-ui" style={{background:'#222'}}><RotateCcw size={28}/>RESET</button>
+        {/* BOTÓN REST (RESET) CON FONDO NARANJA */}
+        <button onClick={() => {setSteps(0); setDistance(0);}} className="btn-ui active-orange">
+          <RotateCcw size={24}/>REST
+        </button>
         
-        <button onClick={() => setIsTracking(true)} className="btn-ui" style={{background:'var(--red)'}}><ShieldAlert size={28}/>SOS</button>
+        <button onClick={() => setShowSos(true)} className="btn-ui" style={{background:'#400', border:'1px solid red'}}>
+          <ShieldAlert size={24} color="red"/>SOS
+        </button>
       </div>
     </div>
   );
