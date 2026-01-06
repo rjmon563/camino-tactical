@@ -12,12 +12,12 @@ const STYLES = `
 html, body, #root { margin: 0; height: 100%; background: var(--black); font-family: 'JetBrains Mono', monospace; color: white; overflow: hidden; position: fixed; width: 100%; }
 .leaflet-container { height: 100%; width: 100%; background: #000; filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(120%); z-index: 1; }
 
-/* FRANCOTIRADOR (MIRA ROJA) */
+/* EL FRANCOTIRADOR (MIRA ROJA) */
 .sniper-scope-marker { position: relative; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
-.scope-cross-h, .scope-cross-v { position: absolute; background: red; box-shadow: 0 0 8px red; z-index: 10; }
+.scope-cross-h, .scope-cross-v { position: absolute; background: red; box-shadow: 0 0 12px red; z-index: 10; }
 .scope-cross-h { width: 100%; height: 2px; }
 .scope-cross-v { width: 2px; height: 100%; }
-.scope-circle { width: 44px; height: 44px; border: 2px solid red; border-radius: 50%; box-shadow: 0 0 10px red; }
+.scope-circle { width: 44px; height: 44px; border: 3px solid red; border-radius: 50%; box-shadow: 0 0 15px red; }
 
 .tactical-stats { position: fixed; top: 85px; right: 20px; z-index: 1000; background: rgba(0,0,0,0.9); border: 2px solid var(--cyan); padding: 10px; border-radius: 8px; font-size: 12px; border-left: 5px solid var(--cyan); }
 .selector-container { position: fixed; top: 20px; left: 20px; right: 20px; z-index: 5000; }
@@ -25,8 +25,8 @@ select { background: #111; color: var(--yellow); border: 2px solid var(--yellow)
 .bottom-console { position: fixed; bottom: 0; left: 0; right: 0; background: #0a0a0a; border-top: 3px solid var(--yellow); display: grid; grid-template-columns: repeat(4, 1fr); padding: 15px 10px 35px 10px; z-index: 6000; gap: 8px; }
 .btn-ui { border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 75px; color: white; font-weight: 900; cursor: pointer; font-size: 9px; }
 .overlay-info { position: fixed; bottom: 135px; left: 20px; right: 20px; background: rgba(0,0,0,0.9); border: 1px solid var(--yellow); padding: 10px; border-radius: 8px; z-index: 1000; display: flex; justify-content: space-between; font-size: 11px; }
-.sos-menu { position: fixed; top: 150px; left: 20px; z-index: 7000; background: #900; border: 2px solid white; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 0 20px black; }
-.sos-option { background: white; color: red; padding: 10px; border-radius: 5px; font-weight: 800; text-align: center; text-decoration: none; font-size: 12px; border: none; cursor: pointer; }
+.sos-menu { position: fixed; top: 150px; left: 20px; z-index: 7000; background: #900; border: 2px solid white; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 0 30px black; }
+.sos-option { background: white; color: red; padding: 10px; border-radius: 5px; font-weight: 800; text-align: center; text-decoration: none; font-size: 12px; border: none; }
 `;
 
 const STAGES = [
@@ -67,13 +67,13 @@ const STAGES = [
 
 const FULL_PATH = STAGES.map(s => s.coords);
 
-// CONTROLADOR DE MOVIMIENTO: SIGUE AL GPS O VUELA A LA ETAPA
+// CONTROLADOR DE POSICIÓN REFORZADO (PRECISIÓN TOTAL)
 function MapController({ userPos, tracking, targetCoords }) {
   const map = useMap();
   useEffect(() => {
     if (tracking && userPos) {
-      map.setView(userPos, 18, { animate: true });
-    } else if (targetCoords) {
+      map.setView(userPos, 18, { animate: true, duration: 0.5 });
+    } else if (targetCoords && !tracking) {
       map.flyTo(targetCoords, 14, { duration: 1.5 });
     }
   }, [userPos, tracking, targetCoords, map]);
@@ -85,37 +85,45 @@ export default function App() {
   const [steps, setSteps] = useState(0);
   const [distance, setDistance] = useState(0);
   const [userPos, setUserPos] = useState(null);
-  const [isTracking, setIsTracking] = useState(false);
+  const [isTracking, setIsTracking] = useState(true); // Tracking ON por defecto
   const [booting, setBooting] = useState(true);
   const [showSosMenu, setShowSosMenu] = useState(false);
   const lastPos = useRef(null);
   const lastStepTime = useRef(0);
 
-  // ACTIVACIÓN DE SENSORES CRÍTICOS (GPS + MOVIMIENTO)
   const startTacticalSystem = async () => {
-    // 1. INICIAR GPS DE ALTA PRECISIÓN
+    // ACTIVAR GPS EN TIEMPO REAL (MÁXIMA PRIORIDAD)
     if ("geolocation" in navigator) {
       navigator.geolocation.watchPosition((p) => {
-        const newPos = [p.coords.latitude, p.coords.longitude];
+        const currentLat = p.coords.latitude;
+        const currentLon = p.coords.longitude;
+        const newPos = [currentLat, currentLon];
+        
+        // Actualizar podómetro GPS si hay movimiento
         if (lastPos.current) {
           const R = 6371;
-          const dLat = (newPos[0]-lastPos.current[0])*Math.PI/180;
-          const dLon = (newPos[1]-lastPos.current[1])*Math.PI/180;
-          const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lastPos.current[0]*Math.PI/180)*Math.cos(newPos[0]*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
-          const d = R * (2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-          if (d > 0.003) setDistance(prev => prev + d);
+          const dLat = (currentLat - lastPos.current[0]) * Math.PI / 180;
+          const dLon = (currentLon - lastPos.current[1]) * Math.PI / 180;
+          const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lastPos.current[0] * Math.PI/180) * Math.cos(currentLat * Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+          const d = R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+          if (d > 0.002) setDistance(prev => prev + d);
         }
+        
         lastPos.current = newPos;
-        setUserPos(newPos);
-      }, (err) => alert("ERROR GPS: " + err.message), { enableHighAccuracy: true });
+        setUserPos(newPos); // Mueve la mira telescópica inmediatamente
+      }, (err) => console.error(err), { 
+        enableHighAccuracy: true, 
+        maximumAge: 0, 
+        timeout: 5000 
+      });
     }
 
-    // 2. INICIAR SENSOR DE MOVIMIENTO (PODÓMETRO)
+    // ACTIVAR SENSORES DE MOVIMIENTO
     if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
       try {
         const permission = await DeviceMotionEvent.requestPermission();
         if (permission === 'granted') window.addEventListener('devicemotion', handleMotion);
-      } catch (e) { console.error("Error permisos movimiento", e); }
+      } catch (e) { alert("Permisos de movimiento denegados"); }
     } else {
       window.addEventListener('devicemotion', handleMotion);
     }
@@ -139,15 +147,14 @@ export default function App() {
       {booting && (
         <div style={{position:'fixed', inset:0, background:'black', zIndex:10000, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center'}}>
           <Zap size={80} color="var(--yellow)" className="animate-pulse mb-8" />
-          <h2 style={{color:'var(--yellow)', marginBottom:20}}>SISTEMA TÁCTICO S-33</h2>
-          <button onClick={startTacticalSystem} style={{background:'var(--yellow)', padding:'30px', borderRadius:'15px', color:'black', fontWeight:900, border:'none', fontSize:'18px', boxShadow:'0 0 20px var(--yellow)'}}>
-            ACTIVAR GPS Y SENSORES DE MOVIMIENTO
+          <button onClick={startTacticalSystem} style={{background:'var(--yellow)', padding:'30px', borderRadius:'15px', color:'black', fontWeight:900, border:'none', fontSize:'18px', boxShadow:'0 0 25px var(--yellow)'}}>
+            ACTIVAR RASTREO Y SENSORES
           </button>
         </div>
       )}
 
-      {/* MENÚ SOS CON GUARDIA CIVIL */}
-      <button style={{position:'fixed', top:85, left:20, zIndex:2000, background:'red', border:'none', borderRadius:'50%', width:55, height:55, color:'white', boxShadow:'0 0 15px red'}} onClick={() => setShowSosMenu(!showSosMenu)}>
+      {/* MENÚ SOS */}
+      <button style={{position:'fixed', top:85, left:20, zIndex:2000, background:'red', borderRadius:'50%', width:55, height:55, color:'white', border:'none'}} onClick={() => setShowSosMenu(!showSosMenu)}>
         <ShieldAlert size={30} />
       </button>
 
@@ -156,11 +163,7 @@ export default function App() {
           <div style={{fontWeight:900, textAlign:'center', color:'white'}}>EMERGENCIA</div>
           <a href="tel:112" className="sos-option">LLAMAR 112</a>
           <a href="tel:062" className="sos-option">GUARDIA CIVIL</a>
-          <button onClick={() => {
-            const msg = `¡AYUDA! Coordenadas: ${userPos?.[0]}, ${userPos?.[1]}`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
-          }} className="sos-option" style={{background:'var(--green)', color:'black'}}>GPS POR WHATSAPP</button>
-          <button onClick={() => setShowSosMenu(false)} style={{background:'none', border:'none', color:'white', fontSize:'10px', marginTop:5}}>CERRAR</button>
+          <button onClick={() => setShowSosMenu(false)} style={{background:'none', border:'none', color:'white', fontSize:'10px'}}>CERRAR</button>
         </div>
       )}
 
@@ -168,7 +171,7 @@ export default function App() {
         <select value={activeStage.id} onChange={(e) => {
           const s = STAGES.find(x => x.id === parseInt(e.target.value));
           setActiveStage(s);
-          setIsTracking(false); // Liberar cámara para que vuele a la etapa seleccionada
+          setIsTracking(false); // Soltar GPS para ver la etapa elegida
         }}>
           {STAGES.map(s => <option key={s.id} value={s.id}>ETAPA {s.id}: {s.name}</option>)}
         </select>
@@ -203,10 +206,18 @@ export default function App() {
       </MapContainer>
 
       <div className="bottom-console">
-        <button onClick={() => window.open(`https://wa.me/?text=UBICACIÓN: https://www.google.com/maps?q=${userPos?.[0]},${userPos?.[1]}`)} className="btn-ui" style={{background:'var(--green)', color:'black'}}><MessageCircle size={28}/>WSAP GPS</button>
-        <button onClick={() => setIsTracking(!isTracking)} className="btn-ui" style={{background: isTracking ? 'var(--cyan)' : '#222', color: isTracking ? 'black' : 'white'}}><Crosshair size={28}/>{isTracking ? 'LOCKED' : 'TRACK'}</button>
+        <button onClick={() => {
+          const coords = userPos ? `${userPos[0]},${userPos[1]}` : "Sin Señal";
+          window.open(`https://wa.me/?text=POSICIÓN TÁCTICA: http://google.com/maps?q=${coords}`);
+        }} className="btn-ui" style={{background:'var(--green)', color:'black'}}><MessageCircle size={28}/>WSAP GPS</button>
+        
+        <button onClick={() => setIsTracking(!isTracking)} className="btn-ui" style={{background: isTracking ? 'var(--cyan)' : '#222', color: isTracking ? 'black' : 'white'}}>
+          <Crosshair size={28}/>{isTracking ? 'LOCKED' : 'TRACK'}
+        </button>
+        
         <button onClick={() => {setSteps(0); setDistance(0);}} className="btn-ui" style={{background:'#222'}}><RotateCcw size={28}/>RESET</button>
-        <button onClick={() => setShowSosMenu(true)} className="btn-ui" style={{background:'var(--red)'}}><ShieldAlert size={28}/>SOS</button>
+        
+        <button onClick={() => setIsTracking(true)} className="btn-ui" style={{background:'var(--red)'}}><ShieldAlert size={28}/>SOS</button>
       </div>
     </div>
   );
