@@ -25,33 +25,68 @@ select { background: var(--gray); color: var(--orange); border: 2px solid var(--
 .bottom-console { position: fixed; bottom: 0; left: 0; right: 0; background: #000; border-top: 2px solid var(--orange); display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px 10px 35px 10px; z-index: 6000; gap: 8px; }
 .btn-ui { border-radius: 8px; border: 1px solid #333; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 75px; color: white; font-weight: 900; cursor: pointer; font-size: 10px; background: var(--gray); text-decoration: none; }
 
-.btn-wsap { background: var(--green) !important; color: black !important; }
-.btn-track { border: 2px solid var(--orange) !important; transition: all 0.3s; }
-.btn-track.active { background: var(--orange) !important; color: black !important; box-shadow: 0 0 20px var(--orange); }
+.btn-wsap { background: var(--green) !important; color: black !important; border: none; }
+.btn-track { border: 2px solid var(--orange) !important; }
+.btn-track.active { background: var(--orange) !important; color: black !important; box-shadow: 0 0 15px var(--orange); }
 .btn-rest { background: var(--orange) !important; color: black !important; }
 .btn-sos { background: #400 !important; border: 2px solid red !important; color: white !important; }
 
-.sos-dropdown { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; background: rgba(60,0,0,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; gap: 20px; }
-.sos-card { background: #000; border: 2px solid red; padding: 30px; border-radius: 15px; width: 100%; max-width: 300px; display: flex; flex-direction: column; gap: 15px; }
-.sos-link { background: red; color: white; padding: 20px; border-radius: 10px; text-align: center; font-weight: 900; text-decoration: none; fontSize: 20px; }
+.overlay-info { position: fixed; bottom: 135px; left: 20px; right: 20px; background: rgba(0,0,0,0.9); border-left: 4px solid var(--orange); padding: 12px; border-radius: 4px; z-index: 1000; display: flex; justify-content: space-between; font-size: 11px; border-top: 1px solid #333; color: var(--orange); }
 
-.gps-log { position: fixed; top: 160px; right: 20px; z-index: 1000; font-size: 10px; background: #000; color: #ff0000; padding: 5px; border: 1px solid red; }
+.sos-dropdown { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; background: rgba(40,0,0,0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+.sos-card { background: #000; border: 3px solid red; padding: 30px; border-radius: 15px; width: 100%; max-width: 300px; display: flex; flex-direction: column; gap: 20px; }
+.sos-link { background: white; color: red; padding: 20px; border-radius: 10px; text-align: center; font-weight: 900; text-decoration: none; font-size: 22px; box-shadow: 0 0 20px red; }
+
+.gps-log { position: fixed; top: 160px; right: 20px; z-index: 1000; font-size: 10px; background: #000; color: var(--orange); padding: 5px; border: 1px solid var(--orange); }
 `;
 
 const STAGES = [
-  { id: 1, name: "SJ Pied de Port - Roncesvalles", coords: [43.0125, -1.3148] },
-  { id: 2, name: "Roncesvalles - Zubiri", coords: [42.9298, -1.5042] },
-  { id: 32, name: "O Pedrouzo - Santiago", coords: [42.8870, -8.5100] },
-  { id: 33, name: "Santiago de Compostela", coords: [42.8806, -8.5464] }
+  { id: 1, name: "SJ Pied de Port - Roncesvalles", coords: [43.0125, -1.3148], diff: "ALTA", des: "1.250m" },
+  { id: 2, name: "Roncesvalles - Zubiri", coords: [42.9298, -1.5042], diff: "MEDIA", des: "400m" },
+  { id: 3, name: "Zubiri - Pamplona", coords: [42.8125, -1.6458], diff: "BAJA", des: "150m" },
+  { id: 4, name: "Pamplona - P. la Reina", coords: [42.6719, -1.8139], diff: "MEDIA", des: "450m" },
+  { id: 5, name: "P. la Reina - Estella", coords: [42.6715, -2.0315], diff: "BAJA", des: "200m" },
+  { id: 6, name: "Estella - Los Arcos", coords: [42.5684, -2.1917], diff: "BAJA", des: "150m" },
+  { id: 7, name: "Los Arcos - Logroño", coords: [42.4627, -2.445], diff: "BAJA", des: "100m" },
+  { id: 8, name: "Logroño - Nájera", coords: [42.4162, -2.7303], diff: "MEDIA", des: "300m" },
+  { id: 9, name: "Nájera - Sto. Domingo", coords: [42.4411, -2.9535], diff: "BAJA", des: "250m" },
+  { id: 10, name: "Sto. Domingo - Belorado", coords: [42.4194, -3.1904], diff: "BAJA", des: "150m" },
+  { id: 11, name: "Belorado - Agés", coords: [42.3664, -3.4503], diff: "MEDIA", des: "400m" },
+  { id: 12, name: "Agés - Burgos", coords: [42.3440, -3.6969], diff: "BAJA", des: "100m" },
+  { id: 13, name: "Burgos - Hontanas", coords: [42.3120, -4.0450], diff: "MEDIA", des: "300m" },
+  { id: 14, name: "Hontanas - Frómista", coords: [42.2668, -4.4061], diff: "BAJA", des: "50m" },
+  { id: 15, name: "Frómista - Carrión", coords: [42.3389, -4.6067], diff: "BAJA", des: "50m" },
+  { id: 16, name: "Carrión - Terradillos", coords: [42.3610, -4.9248], diff: "BAJA", des: "100m" },
+  { id: 17, name: "Terradillos - Sahagún", coords: [42.3719, -5.0315], diff: "BAJA", des: "50m" },
+  { id: 18, name: "Sahagún - Bercianos", coords: [42.4230, -5.2215], diff: "BAJA", des: "50m" },
+  { id: 19, name: "Bercianos - León", coords: [42.5987, -5.5671], diff: "BAJA", des: "100m" },
+  { id: 20, name: "León - San Martín", coords: [42.5200, -5.8100], diff: "BAJA", des: "50m" },
+  { id: 21, name: "San Martín - Astorga", coords: [42.4544, -6.0560], diff: "BAJA", des: "150m" },
+  { id: 22, name: "Astorga - Foncebadón", coords: [42.4385, -6.3450], diff: "MEDIA", des: "600m" },
+  { id: 23, name: "Foncebadón - Ponferrada", coords: [42.5455, -6.5936], diff: "ALTA", des: "-900m" },
+  { id: 24, name: "Ponferrada - Villafranca", coords: [42.6074, -6.8115], diff: "BAJA", des: "100m" },
+  { id: 25, name: "Villafranca - O Cebreiro", coords: [42.7077, -7.0423], diff: "ALTA", des: "1.000m" },
+  { id: 26, name: "O Cebreiro - Triacastela", coords: [42.7565, -7.2403], diff: "MEDIA", des: "-600m" },
+  { id: 27, name: "Triacastela - Sarria", coords: [42.7770, -7.4160], diff: "BAJA", des: "200m" },
+  { id: 28, name: "Sarria - Portomarín", coords: [42.8075, -7.6160], diff: "MEDIA", des: "350m" },
+  { id: 29, name: "Portomarín - Palas de Rei", coords: [42.8732, -7.8687], diff: "MEDIA", des: "400m" },
+  { id: 30, name: "Palas de Rei - Arzúa", coords: [42.9265, -8.1634], diff: "MEDIA", des: "350m" },
+  { id: 31, name: "Arzúa - O Pedrouzo", coords: [42.9100, -8.3600], diff: "BAJA", des: "150m" },
+  { id: 32, name: "O Pedrouzo - Santiago", coords: [42.8870, -8.5100], diff: "BAJA", des: "200m" },
+  { id: 33, name: "Santiago de Compostela", coords: [42.8806, -8.5464], diff: "META", des: "0m" }
 ];
 
-function MapController({ userPos, tracking }) {
+const FULL_PATH = STAGES.map(s => s.coords);
+
+function MapController({ userPos, tracking, targetCoords }) {
   const map = useMap();
   useEffect(() => {
     if (tracking && userPos) {
-      map.setView(userPos, 18);
+      map.setView(userPos, 18, { animate: true });
+    } else if (targetCoords && !tracking) {
+      map.flyTo(targetCoords, 14, { duration: 2 });
     }
-  }, [userPos, tracking, map]);
+  }, [userPos, tracking, targetCoords, map]);
   return null;
 }
 
@@ -63,51 +98,38 @@ export default function App() {
   const [isTracking, setIsTracking] = useState(true);
   const [booting, setBooting] = useState(true);
   const [showSos, setShowSos] = useState(false);
-  const [errorStatus, setErrorStatus] = useState("");
+  const [log, setLog] = useState("SISTEMA STANDBY");
   
   const lastPos = useRef(null);
   const lastStepTime = useRef(0);
 
-  const requestPermissionsAndStart = async () => {
-    setErrorStatus("SOLICITANDO PERMISOS...");
+  const startTacticalSystem = async () => {
+    setLog("BUSCANDO SATÉLITES...");
     
     // GPS
-    if (!navigator.geolocation) {
-      setErrorStatus("GPS NO SOPORTADO");
-      return;
-    }
-
-    navigator.geolocation.watchPosition(
-      (p) => {
+    if (navigator.geolocation) {
+      navigator.geolocation.watchPosition((p) => {
         const current = [p.coords.latitude, p.coords.longitude];
-        setErrorStatus("GPS OK");
-        
+        setLog("GPS: ONLINE");
         if (lastPos.current) {
           const R = 6371;
           const dLat = (current[0] - lastPos.current[0]) * Math.PI / 180;
           const dLon = (current[1] - lastPos.current[1]) * Math.PI / 180;
           const a = Math.sin(dLat/2)**2 + Math.cos(lastPos.current[0]*Math.PI/180)*Math.cos(current[0]*Math.PI/180)*Math.sin(dLon/2)**2;
           const d = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-          if (d > 0.002) setDistance(prev => prev + d);
+          if (d > 0.003) setDistance(prev => prev + d);
         }
         lastPos.current = current;
         setUserPos(current);
-      },
-      (err) => {
-        if (err.code === 1) setErrorStatus("ERROR 1: PERMISO DENEGADO");
-        else setErrorStatus(`ERROR GPS: ${err.message}`);
-      },
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
-    );
+      }, (err) => setLog(`ERR GPS: ${err.code}`), { enableHighAccuracy: true });
+    }
 
-    // PODÓMETRO
-    if (window.DeviceMotionEvent) {
-      if (typeof DeviceMotionEvent.requestPermission === 'function') {
-        const permission = await DeviceMotionEvent.requestPermission();
-        if (permission === 'granted') window.addEventListener('devicemotion', handleMotion);
-      } else {
-        window.addEventListener('devicemotion', handleMotion);
-      }
+    // PODÓMETRO (SENSORES DE MOVIMIENTO)
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+      const permission = await DeviceMotionEvent.requestPermission();
+      if (permission === 'granted') window.addEventListener('devicemotion', handleMotion, true);
+    } else {
+      window.addEventListener('devicemotion', handleMotion, true);
     }
     setBooting(false);
   };
@@ -118,7 +140,7 @@ export default function App() {
     const force = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
     if (force > 12.5) {
       const now = Date.now();
-      if (now - lastStepTime.current > 350) {
+      if (now - lastStepTime.current > 330) {
         setSteps(s => s + 1);
         lastStepTime.current = now;
       }
@@ -130,44 +152,50 @@ export default function App() {
       <style>{STYLES}</style>
 
       {booting && (
-        <div style={{position:'fixed', inset:0, background:'black', zIndex:10000, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:20}}>
-          <Zap size={80} color="var(--orange)" className="animate-pulse mb-8" />
-          <button onClick={requestPermissionsAndStart} style={{background:'var(--orange)', padding:'30px', borderRadius:'15px', color:'black', fontWeight:900, border:'none', fontSize:'20px', width:'100%'}}>
-            DAR PERMISOS Y EMPEZAR
+        <div style={{position:'fixed', inset:0, background:'black', zIndex:10000, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:30}}>
+          <Zap size={100} color="var(--orange)" className="animate-pulse mb-8" />
+          <button onClick={startTacticalSystem} style={{background:'var(--orange)', padding:'30px', borderRadius:'15px', color:'black', fontWeight:900, border:'none', fontSize:'18px', width:'100%', boxShadow:'0 0 40px var(--orange)'}}>
+            ACTIVAR SENSORES Y CAMINO
           </button>
-          <p style={{color:'red', marginTop:20, fontSize:12}}>{errorStatus}</p>
         </div>
       )}
 
       {showSos && (
         <div className="sos-dropdown">
           <div className="sos-card">
-            <h2 style={{color:'red', textAlign:'center'}}>EMERGENCIA</h2>
+            <h1 style={{color:'red', textAlign:'center', margin:0}}>SOS</h1>
             <a href="tel:112" className="sos-link">LLAMAR 112</a>
-            <a href="tel:062" className="sos-link" style={{background:'#555'}}>GUARDIA CIVIL</a>
-            <button onClick={() => setShowSos(false)} style={{background:'none', border:'none', color:'white', marginTop:10}}>CERRAR</button>
+            <a href="tel:062" className="sos-link" style={{background:'#444'}}>GUARDIA CIVIL</a>
+            <button onClick={() => setShowSos(false)} style={{background:'none', border:'1px solid #555', color:'white', padding:10, borderRadius:5}}>CANCELAR</button>
           </div>
         </div>
       )}
 
       <div className="selector-container">
-        <select onChange={(e) => {
-          setActiveStage(STAGES.find(s => s.id === parseInt(e.target.value)));
+        <select value={activeStage.id} onChange={(e) => {
+          const stage = STAGES.find(s => s.id === parseInt(e.target.value));
+          setActiveStage(stage);
           setIsTracking(false);
         }}>
-          {STAGES.map(s => <option key={s.id} value={s.id}>OBJETIVO: {s.name}</option>)}
+          {STAGES.map(s => <option key={s.id} value={s.id}>ETAPA {s.id}: {s.name}</option>)}
         </select>
       </div>
 
       <div className="tactical-stats">
         <div><Activity size={14}/> PASOS: {steps}</div>
-        <div style={{marginTop:8}}><Navigation size={14}/> DIST: {distance.toFixed(3)} KM</div>
+        <div style={{marginTop:8}}><Navigation size={14}/> KM: {distance.toFixed(3)}</div>
       </div>
 
-      <div className="gps-log">{errorStatus}</div>
+      <div className="gps-log">{log}</div>
 
-      <MapContainer center={activeStage.coords} zoom={15} zoomControl={false}>
+      <div className="overlay-info">
+        <div><AlertTriangle size={14}/> DIFICULTAD: <b>{activeStage.diff}</b></div>
+        <div><Mountain size={14}/> DESNIVEL: <b>{activeStage.des}</b></div>
+      </div>
+
+      <MapContainer center={activeStage.coords} zoom={14} zoomControl={false}>
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <Polyline positions={FULL_PATH} pathOptions={{ color: '#f97316', weight: 4 }} />
         {userPos && (
           <Marker position={userPos} icon={L.divIcon({
             className: '',
@@ -175,14 +203,22 @@ export default function App() {
             iconSize: [80, 80], iconAnchor: [40, 40]
           })} />
         )}
-        <MapController userPos={userPos} tracking={isTracking} />
+        <MapController userPos={userPos} tracking={isTracking} targetCoords={activeStage.coords} />
       </MapContainer>
 
       <div className="bottom-console">
-        <button onClick={() => window.open(`https://wa.me/?text=GPS: ${userPos}`)} className="btn-ui btn-wsap"><MessageCircle size={28}/></button>
-        <button onClick={() => setIsTracking(!isTracking)} className={`btn-ui btn-track ${isTracking ? 'active' : ''}`}><Crosshair size={28}/>{isTracking ? 'LOCKED' : 'TRACK'}</button>
-        <button onClick={() => {setSteps(0); setDistance(0);}} className="btn-ui btn-rest"><RotateCcw size={28}/></button>
-        <button onClick={() => setShowSos(true)} className="btn-ui btn-sos"><ShieldAlert size={28}/></button>
+        <button onClick={() => {
+          if(!userPos) return alert("Esperando señal...");
+          window.open(`https://wa.me/?text=POSICION TACTICA: https://www.google.com/maps?q=${userPos[0]},${userPos[1]}`);
+        }} className="btn-ui btn-wsap"><MessageCircle size={28}/>WHATSAPP</button>
+        
+        <button onClick={() => setIsTracking(!isTracking)} className={`btn-ui btn-track ${isTracking ? 'active' : ''}`}>
+          <Crosshair size={28}/>{isTracking ? 'LOCKED' : 'TRACK'}
+        </button>
+        
+        <button onClick={() => {setSteps(0); setDistance(0);}} className="btn-ui btn-rest"><RotateCcw size={28}/>RESET</button>
+        
+        <button onClick={() => setShowSos(true)} className="btn-ui btn-sos"><ShieldAlert size={28}/>SOS</button>
       </div>
     </div>
   );
