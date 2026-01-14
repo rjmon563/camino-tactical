@@ -17,6 +17,7 @@
     "react-leaflet": "^4.2.1"
   },
   "devDependencies": {
+    "vite-plugin-pwa": "^0.18.0",
     "@tailwindcss/postcss": "^4.1.18",
     "@vitejs/plugin-react": "^4.0.3",
     "autoprefixer": "^10.4.23",
