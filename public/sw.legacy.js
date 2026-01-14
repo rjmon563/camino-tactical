@@ -1,3 +1,4 @@
+// backup del service worker antiguo (renombrado desde public/sw.js)
 const CACHE_NAME = 'buen-camino-v1';
 const ASSETS = [
   '/',
