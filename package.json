@@ -15,6 +15,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-leaflet": "^4.2.1"
+    "@capacitor/filesystem": "^5.1.4"
   },
   "devDependencies": {
     "vite-plugin-pwa": "^0.18.0",
